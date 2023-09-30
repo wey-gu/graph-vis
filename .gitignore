@@ -1,0 +1,5 @@
+media/
+manim/
+
+__pycache__/
+*.py[cod]

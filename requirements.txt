@@ -1,0 +1,4 @@
+manim
+manimgl
+networkx
+numpy
