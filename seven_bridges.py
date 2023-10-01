@@ -389,23 +389,33 @@ class MarkovChainGraph(Graph):
 
 class SevenBridges(Scene):
     """
+    This class represents the Seven Bridges of Königsberg problem.
+    It creates a scene with a city outline, rivers, and bridges.
+    It also includes a method to animate a dot traversing the bridges.
     ref: https://en.wikipedia.org/wiki/Seven_Bridges_of_K%C3%B6nigsberg
     """
 
     def construct(self):
-        self.city_outline = Rectangle(width=9, height=6, color=WHITE)  # 添加一个矩形来表示城市轮廓
+        # Create a rectangle to represent the city outline
+        self.city_outline = Rectangle(width=11, height=6, color=WHITE)
+        # Create a title for the scene
         self.title = Tex("Seven Bridges of Königsberg")
         self.title.scale(1.2)
         self.title.next_to(self.city_outline, UP)
-        # Rivers
+
+        # Create the rivers
+        # Main river path
         self.main_river_path = ParametricFunction(
-            lambda t: np.array([t - 1, -0.35 * (t - 1) ** 2 + 0.7, 0]),  # 调整系数来改变弧度
+            lambda t: np.array(
+                [t - 1, -0.35 * (t - 1) ** 2 + 0.7, 0]
+            ),  # Adjust coefficients to change the arc
             t_range=[-3.6, 5.6],
             stroke_width=40,
             color=BLUE,
         )
         self.main_river_path.shift(LEFT)
 
+        # Transverse river path
         self.transverse_river_path = Line(
             start=np.array([-2.1, -0.7, 0]),
             end=np.array([2.1, -0.7, 0]),
@@ -414,6 +424,7 @@ class SevenBridges(Scene):
         )
         self.transverse_river_path.shift(LEFT)
 
+        # Fork river path
         self.fork_river_path = Line(
             start=np.array([0, 0.7, 0]),
             end=np.array([9.9, 0.7, 0]),
@@ -421,74 +432,87 @@ class SevenBridges(Scene):
             color=BLUE,
         )
         self.fork_river_path.shift(LEFT)
+
+        # Group all rivers together
         self.reviers_group = VGroup(
             self.main_river_path, self.transverse_river_path, self.fork_river_path
         )
 
-        # Bridges
-        bridge_color = "#F8DE4E"
-        bridge_width = 30  # 桥的宽度
-        bridge_length = 0.45  # 桥的长度，可视需要进行调整
+        # Create the bridges
+        bridge_color = "#F8DE4E"  # Color of the bridges
+        bridge_width = 30  # Width of the bridge
+        bridge_length = 0.45  # Length of the bridge, adjust as needed
 
-        # 上方土地和右方土地之间的桥
+        # Bridge between the upper land and the right land
         bridge1 = Line(
             start=np.array([2, 0.5 - 0.1, 0]),
             end=np.array([2, 0.5 + bridge_length, 0]),
             stroke_width=bridge_width,
             color=bridge_color,
+            name="bridge1",
         )
 
-        # 上方土地和中间岛之间的桥
+        # Bridge between the upper land and the central island
         bridge2 = Line(
             start=np.array([-1.9, 0.1, 0.1]),
             end=np.array([-2.2, 0.1 + bridge_length, 0]),
             stroke_width=bridge_width,
             color=bridge_color,
+            name="bridge2",
         )
         bridge3 = Line(
-            start=np.array([-1, 0.5 - 0.1, 0]),
-            end=np.array([-1, 0.5 + bridge_length, 0]),
+            start=np.array([-1, 0.5, 0]),
+            end=np.array([-1.3, 0.5 + bridge_length + 0.1, 0]),
             stroke_width=bridge_width,
             color=bridge_color,
+            name="bridge3",
         )
 
-        # 下方土地和右方土地之间的桥
+        # Bridge between the lower land and the right land
         bridge4 = Line(
             start=np.array([0.9, -1.1, 0]),
             end=np.array([1.3, -1.1 + bridge_length, 0]),
             stroke_width=bridge_width,
             color=bridge_color,
+            name="bridge4",
         )
 
-        # 下方土地和中间岛之间的桥
+        # Bridge between the lower land and the central island
         bridge5 = Line(
             start=np.array([0.1, -0.5 - bridge_length, 0]),
             end=np.array([0.1, -0.5 + 0.1, 0]),
             stroke_width=bridge_width,
             color=bridge_color,
+            name="bridge5",
         )
         bridge6 = Line(
             start=np.array([-1.7, -0.5 - bridge_length, 0]),
             end=np.array([-1.7, -0.5 + 0.1, 0]),
             stroke_width=bridge_width,
             color=bridge_color,
+            name="bridge6",
         )
 
-        # 右方土地和中间岛之间的桥
+        # Bridge between the right land and the central island
         bridge7 = Line(
             start=np.array([0.1, -0.1, 0]),
             end=np.array([0.5, -0.1 + bridge_length, 0]),
             stroke_width=bridge_width,
             color=bridge_color,
+            name="bridge7",
         )
+
+        # Group all bridges together
         self.bridge_group = VGroup(
             bridge1, bridge2, bridge3, bridge4, bridge5, bridge6, bridge7
         )
 
+        # Wait for 1 second
         self.wait(1)
-        # Add river, bridges, and city outline to scene
+
+        # Add river, bridges, and city outline to the scene
         self.play(
-			Write(self.title),
+            Write(self.title),
             Create(self.main_river_path),
             Create(self.transverse_river_path),
             Create(self.fork_river_path),
@@ -504,6 +528,87 @@ class SevenBridges(Scene):
             Create(bridge7),
         )
         self.wait(1)
+
+        # Dot traversal of the bridges
+        # Create a set of all bridges
+        all_bridges_set = {
+            bridge1,
+            bridge2,
+            bridge3,
+            bridge4,
+            bridge5,
+            bridge6,
+            bridge7,
+        }
+        # Define the paths for the dot to traverse
+        paths = [
+            [bridge1, bridge7, bridge5, bridge6, bridge2, bridge3],
+        ]
+
+        # Animate the dot traversing the bridges
+        for path in paths:
+            # Create a dot
+            dot = Dot(color=RED)
+            # Move the dot to the end of the first bridge in the path
+            dot.move_to(path[0].get_end())
+
+            # Create a formula for the path
+            path_formula = MathTex(f"p = [{path[0].name}", tex_environment="scriptsize")
+            # Position the formula below the city outline
+            path_formula.next_to(self.city_outline.get_corner(UP + LEFT), DOWN)
+            path_formula.shift(RIGHT * 1.5)
+            # Add the dot and the formula to the scene
+            self.play(Create(dot), Write(path_formula))
+
+            # Animate the dot moving along the path
+            for i, bridge in enumerate(path):
+                # Get the current position of the dot
+                current_position = dot.get_center()
+                # If the start of the bridge is closer to the dot, move the dot to the end of the bridge
+                if np.linalg.norm(
+                    current_position - bridge.get_start()
+                ) < np.linalg.norm(current_position - bridge.get_end()):
+                    self.play(dot.animate.move_to(bridge.get_end()))
+                # Otherwise, move the dot to the start of the bridge
+                else:
+                    self.play(dot.animate.move_to(bridge.get_start()))
+
+                # Change the color of the bridge to indicate that it has been traversed
+                bridge.set_color(ORANGE)
+
+                # Add the name of the bridge to the path formula
+                if i > 0:
+                    new_part = MathTex("," + bridge.name, tex_environment="scriptsize")
+                    new_part.next_to(path_formula, RIGHT)
+                    self.play(Write(new_part))
+                    path_formula.add(new_part)
+
+                # Wait for 0.5 seconds
+                self.wait(0.5)
+                # If there are more bridges in the path, move the dot to the next bridge
+                if i < len(path) - 1:
+                    next_bridge = path[i + 1]
+                    current_position = dot.get_center()
+                    if np.linalg.norm(
+                        current_position - next_bridge.get_start()
+                    ) < np.linalg.norm(current_position - next_bridge.get_end()):
+                        self.play(dot.animate.move_to(next_bridge.get_start()))
+                    else:
+                        self.play(dot.animate.move_to(next_bridge.get_end()))
+
+            # Indicate the bridges that have not been traversed
+            remaining_bridges = all_bridges_set - set(path)
+            for bridge in remaining_bridges:
+                self.play(Indicate(bridge), run_time=1.5)
+
+            # Remove the dot and the path formula from the scene
+            self.play(
+                FadeOut(dot),
+                FadeOut(path_formula),
+                *[FadeOut(part) for part in path_formula],
+            )
+            # Wait for 1 second
+            self.wait(1)
 
 
 class SevenBridgesGraph(SevenBridges):
@@ -590,23 +695,23 @@ class SevenBridgesGraph(SevenBridges):
         # )
         lands_of_all = VGroup(self.lands, self.land_labels)
 
-
         self.play(
             ReplacementTransform(self.bridge_group, VGroup(*graph.edges.values())),
-            run_time=4
+            run_time=4,
         )
 
         self.play(
             ReplacementTransform(lands_of_all, VGroup(*graph.vertices.values())),
             FadeOut(self.reviers_group),
-            run_time=3
+            run_time=3,
         )
 
         self.wait(2)
 
         self.play(
             ReplacementTransform(self.title, title),
-            graph.animate.change_layout("circular"))
+            graph.animate.change_layout("circular"),
+        )
         self.wait(2)
 
         # Definition formula of graph
@@ -614,9 +719,7 @@ class SevenBridgesGraph(SevenBridges):
         graph_vertices_copy = VGroup(
             *[vertex.copy() for vertex in graph.vertices.values()]
         )
-        graph_edges_copy = VGroup(
-            *[edge.copy() for edge in graph.edges.values()]
-        )
+        graph_edges_copy = VGroup(*[edge.copy() for edge in graph.edges.values()])
 
         graph_definition.next_to(graph, LEFT)
 
@@ -627,14 +730,14 @@ class SevenBridgesGraph(SevenBridges):
             Indicate(V_copy),
             Indicate(graph_vertices_copy),
             ReplacementTransform(graph_vertices_copy, V_copy),
-            run_time=3
-            )
+            run_time=3,
+        )
         self.play(
             Indicate(E_copy),
             Indicate(graph_edges_copy),
             ReplacementTransform(graph_edges_copy, E_copy),
-            run_time=3
-            )
+            run_time=3,
+        )
 
         self.play(
             V_copy.animate.shift(RIGHT),
