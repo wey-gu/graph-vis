@@ -1,6 +1,6 @@
 from manim import *
 
-from typing import Hashable, Iterable
+from typing import Hashable
 
 
 #####
@@ -394,7 +394,9 @@ class SevenBridges(Scene):
 
     def construct(self):
         self.city_outline = Rectangle(width=9, height=6, color=WHITE)  # 添加一个矩形来表示城市轮廓
-
+        self.title = Tex("Seven Bridges of Königsberg")
+        self.title.scale(1.2)
+        self.title.next_to(self.city_outline, UP)
         # Rivers
         self.main_river_path = ParametricFunction(
             lambda t: np.array([t - 1, -0.35 * (t - 1) ** 2 + 0.7, 0]),  # 调整系数来改变弧度
@@ -486,6 +488,7 @@ class SevenBridges(Scene):
         self.wait(1)
         # Add river, bridges, and city outline to scene
         self.play(
+			Write(self.title),
             Create(self.main_river_path),
             Create(self.transverse_river_path),
             Create(self.fork_river_path),
@@ -506,7 +509,9 @@ class SevenBridges(Scene):
 class SevenBridgesGraph(SevenBridges):
     def construct(self):
         super().construct()
-
+        title = Tex("Graph of Seven Bridges")
+        title.scale(1.2)
+        title.next_to(self.city_outline, UP)
         # lands
         self.top_land = Dot(point=np.array([-1, 1.2, 0]), color=WHITE)
         self.bottom_land = Dot(point=np.array([-1, -1.2, 0]), color=WHITE)
@@ -576,14 +581,72 @@ class SevenBridgesGraph(SevenBridges):
         )
 
         # Map Land to vertices
+        # self.play(
+        #     FadeOut(self.lands),
+        #     FadeOut(self.land_labels),
+        #     Create(graph),
+        #     FadeOut(self.reviers_group),
+        #     FadeOut(self.bridge_group),
+        # )
+        lands_of_all = VGroup(self.lands, self.land_labels)
+
+
         self.play(
-            FadeOut(self.lands),
-            FadeOut(self.land_labels),
-            Create(graph),
-            FadeOut(self.reviers_group),
-            FadeOut(self.bridge_group),
+            ReplacementTransform(self.bridge_group, VGroup(*graph.edges.values())),
+            run_time=4
         )
+
+        self.play(
+            ReplacementTransform(lands_of_all, VGroup(*graph.vertices.values())),
+            FadeOut(self.reviers_group),
+            run_time=3
+        )
+
         self.wait(2)
 
-        self.play(graph.animate.change_layout("circular"))
+        self.play(
+            ReplacementTransform(self.title, title),
+            graph.animate.change_layout("circular"))
+        self.wait(2)
+
+        # Definition formula of graph
+        graph_definition = MathTex("G", "=", "(", "V", ", ", "E", ")")
+        graph_vertices_copy = VGroup(
+            *[vertex.copy() for vertex in graph.vertices.values()]
+        )
+        graph_edges_copy = VGroup(
+            *[edge.copy() for edge in graph.edges.values()]
+        )
+
+        graph_definition.next_to(graph, LEFT)
+
+        V_copy = graph_definition[3].copy()
+        E_copy = graph_definition[5].copy()
+
+        self.play(
+            Indicate(V_copy),
+            Indicate(graph_vertices_copy),
+            ReplacementTransform(graph_vertices_copy, V_copy),
+            run_time=3
+            )
+        self.play(
+            Indicate(E_copy),
+            Indicate(graph_edges_copy),
+            ReplacementTransform(graph_edges_copy, E_copy),
+            run_time=3
+            )
+
+        self.play(
+            V_copy.animate.shift(RIGHT),
+            E_copy.animate.shift(RIGHT),
+            graph.animate.shift(RIGHT),
+        )
+
+        graph_definition.next_to(graph, LEFT)
+        v_and_e = VGroup(graph_definition[3], graph_definition[5]).copy()
+
+        self.play(
+            ReplacementTransform(v_and_e, graph_definition),
+        )
+
         self.wait(2)
